@@ -219,9 +219,6 @@ contract Bridge is AccessControl, IBridge, Pausable {
     override
     onlyRole(getRoleAdmin(role))
   {
-    if (role == DEFAULT_ADMIN_ROLE) {
-      require(account != _msgSender(), "can not revoke yourself in role owner");
-    }
     super.revokeRole(role, account);
   }
 
@@ -236,6 +233,8 @@ contract Bridge is AccessControl, IBridge, Pausable {
 
   function transferOwnership(address newOwner) public onlyOwner whenNotPaused returns (bool) {
     OWNER_WALLET = newOwner;
+    _grantRole(DEFAULT_ADMIN_ROLE, newOwner);
+    revokeRole(DEFAULT_ADMIN_ROLE, _msgSender());
     return true;
   }
 
