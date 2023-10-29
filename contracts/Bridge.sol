@@ -15,7 +15,6 @@ contract Bridge is AccessControl, IBridge, Pausable {
   address private constant ZERO_ADDRESS = address(0);
   bytes32 private constant NULL_HASH = bytes32(0);
   bytes32 public constant MONITOR_ROLE = keccak256("MONITOR_ROLE");
-  bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
 
   uint256 constant public PERCENTS_DIVIDER = 1000;
 
@@ -38,11 +37,6 @@ contract Bridge is AccessControl, IBridge, Pausable {
 
   modifier onlyMonitor() {
     require(hasRole(MONITOR_ROLE, _msgSender()), "not monitor");
-    _;
-  }
-
-  modifier onlyAdmin() {
-    require(hasRole(ADMIN_ROLE, _msgSender()), "not admin");
     _;
   }
 
@@ -111,7 +105,7 @@ contract Bridge is AccessControl, IBridge, Pausable {
     return true;
   }
 
-  function setDeployBridge(address tokenAddress, address owner, address adminDefault, address monitor, address admin, uint256 feeNative, uint256 feePercentage) public override {
+  function setDeployBridge(address tokenAddress, address owner, address monitor, uint256 feeNative, uint256 feePercentage) public override {
     require(token == ZERO_ADDRESS, "Not set token");
     require(OWNER_WALLET == ZERO_ADDRESS, "Not set owner wallet");
     require(FEE_NATIVE == 0, "Not set admin default role");
@@ -119,8 +113,7 @@ contract Bridge is AccessControl, IBridge, Pausable {
     require(feePercentage <= 100, "Fee percent > 10%");
     token = tokenAddress;
     OWNER_WALLET = owner;
-    _grantRole(DEFAULT_ADMIN_ROLE, adminDefault);
-    _grantRole(ADMIN_ROLE, admin);
+    _grantRole(DEFAULT_ADMIN_ROLE, owner);
     _grantRole(MONITOR_ROLE, monitor);
     FEE_NATIVE = feeNative;
     feePercentageBridge = feePercentage;
@@ -214,27 +207,6 @@ contract Bridge is AccessControl, IBridge, Pausable {
     return true;
   }
 
-  function addAdmin(address account)
-    external
-    onlyOwner
-    whenNotPaused
-    returns (bool)
-  {
-    grantRole(ADMIN_ROLE, account);
-    return true;
-  }
-
-  function delAdmin(address account)
-    external
-    onlyOwner
-    whenNotPaused
-    returns (bool)
-  {
-    //Can be called only by the account defined in constructor: DEFAULT_ADMIN_ROLE
-    revokeRole(ADMIN_ROLE, account);
-    return true;
-  }
-
   function renounceRole(bytes32 role, address account) public virtual override {
     require(role != DEFAULT_ADMIN_ROLE, "can not renounce role owner");
     require(account == _msgSender(), "can only renounce roles for self");
@@ -262,14 +234,14 @@ contract Bridge is AccessControl, IBridge, Pausable {
     return blockchainInfo[blockchainIndex[blockchainName] - 1].minTokenAmount;
   }
 
-  function setProjectOwner(address newOwner) public onlyOwner whenNotPaused returns (bool) {
+  function transferOwnership(address newOwner) public onlyOwner whenNotPaused returns (bool) {
     OWNER_WALLET = newOwner;
     return true;
   }
 
   function setMinTokenAmount(string memory blockchainName, uint256 newAmount)
     public
-    onlyAdmin
+    onlyOwner
     whenNotPaused
     returns (bool)
   {

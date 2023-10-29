@@ -44,5 +44,5 @@ interface IBridge {
   event OwnerChanged(address owner);
   event MinTokenAmountChanged(string blockchainName, uint256 oldAmount, uint256 newAmount);
 
-  function setDeployBridge(address token, address owner, address adminDefault, address monitor, address admin, uint256 feeNative, uint256 feePercentage) external ;
+  function setDeployBridge(address token, address owner, address monitor, uint256 feeNative, uint256 feePercentage) external ;
 }

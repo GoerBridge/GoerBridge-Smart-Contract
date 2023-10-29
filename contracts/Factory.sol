@@ -20,7 +20,6 @@ contract Factory is CloneFactory, ReentrancyGuard, Ownable {
         address deployerAccount,
         address adminDefaultAccount,
         address monitorAccount,
-        address adminAccount,
         address contractBridgeOrigin,
         address contractToken,
         uint256 deployedFee
@@ -46,7 +45,6 @@ contract Factory is CloneFactory, ReentrancyGuard, Ownable {
         address contractOrigin,
         address token,
         address monitorAccount,
-        address adminAccount,
         string memory projectId,
         uint256 feeNative,
         uint256 feePercentBridge
@@ -58,7 +56,7 @@ contract Factory is CloneFactory, ReentrancyGuard, Ownable {
         require(msg.value >= deployFee, "Invalid amount");
         payable(projectWallet).transfer(deployFee);
         address bridgeClone = createClone(contractOrigin);
-        IBridge(bridgeClone).setDeployBridge(token, _msgSender(), _msgSender(), monitorAccount, adminAccount, feeNative, feePercentBridge);
+        IBridge(bridgeClone).setDeployBridge(token, _msgSender(), monitorAccount, feeNative, feePercentBridge);
         checkUnique[contractOrigin][projectId] = true;
 
         emit DeployedBridge(
@@ -67,7 +65,6 @@ contract Factory is CloneFactory, ReentrancyGuard, Ownable {
             _msgSender(),
             _msgSender(),
             monitorAccount,
-            adminAccount,
             contractOrigin,
             token,
             deployFee
