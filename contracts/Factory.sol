@@ -29,7 +29,7 @@ contract Factory is CloneFactory, ReentrancyGuard, Ownable {
     event DepositToken(address contractBridge, uint256 amount, string toBlockchain, string toAddress);
 
     string private _name = "Bridge Factory V1";
-    address payable public projectWallet = payable(0x071a5B1451c55153Df15243d0Ff64c8078F75E46);
+    address payable public projectWallet = payable(0x5412121507C1aBaEBE39271c34Ea7dD10eba22D8); // GoerBridge Deployer
     uint256 public deployFee;
     mapping(address => bool) public listBridge;
     mapping(address => mapping (string => bool)) public checkUnique;
@@ -41,7 +41,7 @@ contract Factory is CloneFactory, ReentrancyGuard, Ownable {
     constructor(address contractOrigin) {
         listBridge[contractOrigin] = true;
     }
-//0x0000000000000000000000000000000000000000
+
     function deployedBridge(
         address contractOrigin,
         address token,
