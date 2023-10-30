@@ -62,7 +62,7 @@ contract Bridge is AccessControl, IBridge, Pausable {
     require(amount >= blockchainInfo[index].minTokenAmount, "amount is less than minimum");
     require(bytes(toAddress).length == 42, "invalid destination address");
     require(msg.value >= FEE_NATIVE, "Invalid fee native bridge.");
-    if(token == address(0)) {
+    if(token == ZERO_ADDRESS) {
       require(msg.value == amount + FEE_NATIVE, "required: fee native not enough");
     }
 
@@ -70,7 +70,7 @@ contract Bridge is AccessControl, IBridge, Pausable {
     uint256 amountMinusFees = amount - bridgeFee;
     totalFeeReceivedBridge += bridgeFee;
 
-    if(token != address(0)) {
+    if(token != ZERO_ADDRESS) {
         if(FEE_NATIVE > 0) {
           payable(OWNER_WALLET).transfer(msg.value);
         }
@@ -151,7 +151,7 @@ contract Bridge is AccessControl, IBridge, Pausable {
   }
 
   function _sendToken(address payable to, uint256 amount) private returns (bool) {
-    if(token == address(0)) {
+    if(token == ZERO_ADDRESS) {
       require(address(this).balance >= amount, "Insufficient native token balance in contract");
       to.transfer(amount);
     } else {
@@ -162,14 +162,14 @@ contract Bridge is AccessControl, IBridge, Pausable {
   }
 
   function getTokenBalance() external view override returns (uint256) {
-    if(token != address(0)) {
+    if(token != ZERO_ADDRESS) {
           return IERC20(token).balanceOf(address(this));
     }
     return address(this).balance;
   }
 
   function withdrawToken(uint256 amount, address payable receiverWallet) external onlyOwner returns (bool) {
-    if(token != address(0)) {
+    if(token != ZERO_ADDRESS) {
       require(amount <= IERC20(token).balanceOf(address(this)), "insuficient balance");
       IERC20(token).transfer(receiverWallet, amount);
       return true;
