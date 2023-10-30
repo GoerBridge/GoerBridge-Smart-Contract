@@ -18,7 +18,6 @@ contract Factory is CloneFactory, ReentrancyGuard, Ownable {
         string projectId,
         address contractBridge,
         address deployerAccount,
-        address adminDefaultAccount,
         address monitorAccount,
         address contractBridgeOrigin,
         address contractToken,
@@ -62,7 +61,6 @@ contract Factory is CloneFactory, ReentrancyGuard, Ownable {
         emit DeployedBridge(
             projectId,
             bridgeClone,
-            _msgSender(),
             _msgSender(),
             monitorAccount,
             contractOrigin,
