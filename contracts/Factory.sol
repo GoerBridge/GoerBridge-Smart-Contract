@@ -36,8 +36,9 @@ contract Factory is CloneFactory, ReentrancyGuard, Ownable {
         return _name;
     }
 
-    constructor(address contractOrigin) {
+    constructor(address contractOrigin, uint256 valueFee) {
         listBridge[contractOrigin] = true;
+        deployFee = valueFee;
     }
 
     function deployedBridge(
