@@ -34,9 +34,11 @@ interface IBridge {
     uint32 logIndex
   ) external returns (bytes32);
 
-  function existsBlockchain(string calldata name) external view returns (bool);
+  function existsBlockchainFrom(string calldata name) external view returns (bool);
+  function existsBlockchainTo(string calldata name) external view returns (bool);
 
-  function listBlockchain() external view returns (string[] memory);
+  function listBlockchainFrom() external view returns (string[] memory);
+  function listBlockchainTo() external view returns (string[] memory);
 
   event CrossRequest(address from, uint256 amount, string toAddress, string toBlockchain);
   event FeePercentageBridgeChanged(uint256 oldFee, uint256 newFee);

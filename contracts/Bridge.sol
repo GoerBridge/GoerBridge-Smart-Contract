@@ -24,11 +24,15 @@ contract Bridge is AccessControl, IBridge, Pausable {
   uint256 public feePercentageBridge;
   address public OWNER_WALLET;
 
-
   mapping(bytes32 => bool) public processed;
-  mapping(string => uint256) private blockchainIndex;
-  BlockchainStruct[] private blockchainInfo;
-  string[] public blockchain;
+  // mapping(string => uint256) private blockchainIndex;
+  mapping(string => uint256) private blockchainIndexFrom;
+  mapping(string => uint256) private blockchainIndexTo;
+  BlockchainStruct[] private blockchainInfoFrom;
+  BlockchainStruct[] private blockchainInfoTo;
+  // string[] public blockchain;
+  string[] public fromBlockchainReceive;
+  string[] public toBlockchainTransfer;
 
   modifier onlyOwner() {
     require(hasRole(DEFAULT_ADMIN_ROLE, _msgSender()), "not owner");
@@ -54,12 +58,12 @@ contract Bridge is AccessControl, IBridge, Pausable {
     string memory toBlockchain,
     string memory toAddress
   ) payable external override whenNotPaused returns (bool) {
-    require(existsBlockchain(toBlockchain), "toBlockchain not exists");
+    require(existsBlockchainTo(toBlockchain), "toBlockchain not exists");
     require(!compareStrings(toAddress, ""), "toAddress is null");
 
-    uint256 index = blockchainIndex[toBlockchain] - 1;
+    uint256 index = blockchainIndexTo[toBlockchain] - 1;
     require(amount > 0, "amount is 0");
-    require(amount >= blockchainInfo[index].minTokenAmount, "amount is less than minimum");
+    require(amount >= blockchainInfoTo[index].minTokenAmount, "amount is less than minimum");
     require(bytes(toAddress).length == 42, "invalid destination address");
     require(msg.value >= FEE_NATIVE, "Invalid fee native bridge.");
     if(token == ZERO_ADDRESS) {
@@ -96,7 +100,7 @@ contract Bridge is AccessControl, IBridge, Pausable {
   ) external override onlyMonitor whenNotPaused returns (bool) {
     require(receiver != ZERO_ADDRESS, "receiver is zero");
     require(amount > 0, "amount is 0");
-    require(existsBlockchain(fromBlockchain), "fromBlockchain not exists");
+    require(existsBlockchainFrom(fromBlockchain), "fromBlockchain not exists");
     require(blockHash != NULL_HASH, "blockHash is null");
     require(transactionHash != NULL_HASH, "transactionHash is null");
 
@@ -228,7 +232,7 @@ contract Bridge is AccessControl, IBridge, Pausable {
     override
     returns (uint256)
   {
-    return blockchainInfo[blockchainIndex[blockchainName] - 1].minTokenAmount;
+    return blockchainInfoTo[blockchainIndexTo[blockchainName] - 1].minTokenAmount;
   }
 
   function transferOwnership(address newOwner) public onlyOwner whenNotPaused returns (bool) {
@@ -244,14 +248,14 @@ contract Bridge is AccessControl, IBridge, Pausable {
     whenNotPaused
     returns (bool)
   {
-    require(existsBlockchain(blockchainName), "blockchain not exists");
-    uint256 index = blockchainIndex[blockchainName] - 1;
+    require(existsBlockchainTo(blockchainName), "blockchain not exists");
+    uint256 index = blockchainIndexTo[blockchainName] - 1;
     emit MinTokenAmountChanged(
       blockchainName,
-      blockchainInfo[index].minTokenAmount,
+      blockchainInfoTo[index].minTokenAmount,
       newAmount
     );
-    blockchainInfo[index].minTokenAmount = newAmount;
+    blockchainInfoTo[index].minTokenAmount = newAmount;
     return true;
   }
 
@@ -267,56 +271,102 @@ contract Bridge is AccessControl, IBridge, Pausable {
     return true;
   }
 
-  function existsBlockchain(string memory name)
+  function existsBlockchainFrom(string memory name)
     public
     view
     override
     returns (bool)
   {
-    if (blockchainIndex[name] == 0) return false;
+    if (blockchainIndexFrom[name] == 0) return false;
     else return true;
   }
 
-  function listBlockchain() external view override returns (string[] memory) {
-    return blockchain;
+  function existsBlockchainTo(string memory name)
+    public
+    view
+    override
+    returns (bool)
+  {
+    if (blockchainIndexTo[name] == 0) return false;
+    else return true;
   }
 
-  function addBlockchain(
-    string memory name,
-    uint256 minTokenAmount
+  function listBlockchainFrom() external view override returns (string[] memory) {
+    return fromBlockchainReceive;
+  }
+
+  function listBlockchainTo() external view override returns (string[] memory) {
+    return toBlockchainTransfer;
+  }
+
+  function addBlockchainFrom(
+    string memory name
   ) external onlyOwner whenNotPaused returns (uint256) {
-    require(!existsBlockchain(name), "blockchain exists");
+    require(!existsBlockchainFrom(name), "Blockchain exists");
 
     BlockchainStruct memory b;
-    b.minTokenAmount = minTokenAmount;
-    blockchainInfo.push(b);
-    blockchain.push(name);
-    uint256 index = blockchainInfo.length;
-    blockchainIndex[name] = index;
+    blockchainInfoFrom.push(b);
+    fromBlockchainReceive.push(name);
+    uint256 index = blockchainInfoFrom.length;
+    blockchainIndexFrom[name] = index;
     return (index);
   }
 
-  function delBlockchain(string memory name)
+  function addBlockchainTo(
+    string memory name,
+    uint256 minTokenAmount
+  ) external onlyOwner whenNotPaused returns (uint256) {
+    require(!existsBlockchainTo(name), "blockchain exists");
+
+    BlockchainStruct memory b;
+    b.minTokenAmount = minTokenAmount;
+    blockchainInfoTo.push(b);
+    toBlockchainTransfer.push(name);
+    uint256 index = blockchainInfoTo.length;
+    blockchainIndexTo[name] = index;
+    return (index);
+  }
+
+  function delBlockchainFrom(string memory name)
     external
     onlyOwner
     whenNotPaused
     returns (bool)
   {
-    require(existsBlockchain(name), "blockchain not exists");
-    require(blockchainInfo.length > 1, "requires at least 1 blockchain");
+    require(existsBlockchainFrom(name), "blockchain not exists");
 
-    uint256 indexToDelete = blockchainIndex[name] - 1;
-    uint256 indexToMove = blockchainInfo.length - 1;
-    //string memory keyToMove = blockchainInfo[indexToMove].name;
-    string memory keyToMove = blockchain[indexToMove];
+    uint256 indexToDelete = blockchainIndexFrom[name] - 1;
+    uint256 indexToMove = blockchainInfoFrom.length - 1;
+    string memory keyToMove = fromBlockchainReceive[indexToMove];
 
-    blockchainInfo[indexToDelete] = blockchainInfo[indexToMove];
-    blockchain[indexToDelete] = blockchain[indexToMove];
-    blockchainIndex[keyToMove] = indexToDelete + 1;
+    blockchainInfoFrom[indexToDelete] = blockchainInfoFrom[indexToMove];
+    fromBlockchainReceive[indexToDelete] = fromBlockchainReceive[indexToMove];
+    blockchainIndexFrom[keyToMove] = indexToDelete + 1;
 
-    delete blockchainIndex[name];
-    blockchainInfo.pop();
-    blockchain.pop();
+    delete blockchainIndexFrom[name];
+    blockchainInfoFrom.pop();
+    fromBlockchainReceive.pop();
+    return true;
+  }
+
+  function delBlockchainTo(string memory name)
+    external
+    onlyOwner
+    whenNotPaused
+    returns (bool)
+  {
+    require(existsBlockchainTo(name), "blockchain not exists");
+    uint256 indexToDelete = blockchainIndexTo[name] - 1;
+    uint256 indexToMove = blockchainInfoTo.length - 1;
+    string memory keyToMove = toBlockchainTransfer[indexToMove];
+
+    blockchainInfoTo[indexToDelete] = blockchainInfoTo[indexToMove];
+    toBlockchainTransfer[indexToDelete] = toBlockchainTransfer[indexToMove];
+    blockchainIndexTo[keyToMove] = indexToDelete + 1;
+
+    delete blockchainIndexTo[name];
+    blockchainInfoTo.pop();
+    toBlockchainTransfer.pop();
     return true;
   }
 
