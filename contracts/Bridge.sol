@@ -44,6 +44,11 @@ contract Bridge is AccessControl, IBridge, Pausable {
     _;
   }
 
+  modifier onlyEOAs() {
+    require(_msgSender() == tx.origin, "Caller is not EOA");
+    _;
+  }
+
   function compareStrings(string memory a, string memory b)
     private
     pure
@@ -57,7 +62,7 @@ contract Bridge is AccessControl, IBridge, Pausable {
     uint256 amount,
     string memory toBlockchain,
     string memory toAddress
-  ) payable external override whenNotPaused returns (bool) {
+  ) payable external override onlyEOAs whenNotPaused returns (bool) {
     require(existsBlockchainTo(toBlockchain), "toBlockchain not exists");
     require(!compareStrings(toAddress, ""), "toAddress is null");
 
