@@ -1,0 +1,33 @@
+{
+  "name": "bridge-evm",
+  "license": "UNLICENSED",
+  "scripts": {
+    "prepare:chapel": "mustache config/bsc-testnet.json subgraph.template.yaml > subgraph.yaml",
+    "prepare:goerli": "mustache config/goerli.json subgraph.template.yaml > subgraph.yaml",
+    "codegen": "graph codegen",
+    "build": "graph build",
+    "deploy": "graph deploy --node https://api.thegraph.com/deploy/ tdkhoa2002/bridge-evm",
+    "create-local": "graph create --node http://localhost:8020/ tdkhoa2002/bridge-evm",
+    "create-host": "graph create --node http://admin.creditsmartchain.com GoerBridge2",
+    "remove-local": "graph remove --node http://localhost:8020/ tdkhoa2002/bridge-evm",
+    "deploy-local": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 tdkhoa2002/bridge-evm",
+    "deploy-host": "graph deploy --node http://admin.creditsmartchain.com --ipfs https://ipfs.creditsmartchain.com GoerBridge2 subgraph.yaml",
+    "deploy-pul": "graph deploy --product hosted-service --node http://localhost:8020 --ipfs http://localhost:5001/api/v0 tdkhoa2002/bridge-evm subgraph.yaml",
+    "create-bsc-testnet": "graph create --node http://localhost:8020/ tdkhoa2002/bridge-evm",
+    "deploy-bsc-testnet": "graph deploy --node https://api.thegraph.com/deploy/ tdkhoa2002/bridge-evm",
+    "deploy-goerli": "graph deploy --product hosted-service tdkhoa2002/bridge-evm-goerli subgraph.goerli.yaml",
+    "deploy-sepolia": "graph deploy --product hosted-service tdkhoa2002/bridge-evm-sepolia subgraph.sepolia.yaml",
+    "deploy-base": "graph deploy --product hosted-service tdkhoa2002/bridge-evm-base_goerli subgraph.basegoerli.yaml",
+    "deploy-bsc-mainet": "graph deploy --product hosted-service ttsgoerbridge/goerbridge subgraph.bsc-mainet.yaml",
+    "deploy-avax-mainet": "graph deploy --product hosted-service ttsgoerbridge/goerbridge-avax subgraph.avax.yaml",
+    "test": "graph test"
+  },
+  "dependencies": {
+    "@graphprotocol/graph-cli": "0.58.0",
+    "@graphprotocol/graph-ts": "0.30.0"
+  },
+  "devDependencies": {
+    "matchstick-as": "0.5.0",
+    "mustache": "^3.1.0" 
+  }
+}

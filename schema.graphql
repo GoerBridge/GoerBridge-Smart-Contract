@@ -1,0 +1,39 @@
+# FACTORY
+type DeployedBridge @entity {
+  id: ID!
+  projectId: String! # string
+  contractBridge: Bytes! # address
+  deployerAccount: Bytes! # address
+  monitorAccount: Bytes! # address
+  contractBridgeOrigin: Bytes! # address
+  contractToken: Bytes! # address
+  deployedFee: BigInt! # uint256
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+  crossRequests: [CrossRequest!]! @derivedFrom(field: "deployedBridge")
+}
+
+type OwnershipTransferred @entity {
+  id: Bytes!
+  previousOwner: Bytes! # address
+  newOwner: Bytes! # address
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+#BRIDGE
+type CrossRequest @entity {
+  id: ID!
+  bridgeContract: Bytes!
+  fromAddress: Bytes!
+  amount: BigInt!
+  toAddress: String!
+  toBlockchain: String!
+  deployedBridge: DeployedBridge!
+  blockNumber: BigInt!
+  blockHash: Bytes!
+  hash: Bytes!
+  logIndex: BigInt!
+}

@@ -1,0 +1,67 @@
+specVersion: 0.0.5
+schema:
+  file: schema.graphql
+dataSources:
+  - kind: ethereum
+    name: Factory
+    network: avalanche
+    source:
+      abi: Factory
+      address: "0xFFD9A0125bD2c1229d40D53aB1036B94e6a8F440"
+      startBlock: 40217818
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - DeployedBridge
+        - DepositToken
+        - OwnershipTransferred
+      abis:
+        - name: Factory
+          file: Factory\abis\Factory.json
+      eventHandlers:
+        - event: DeployedBridge(string,address,address,address,address,address,uint256)
+          handler: handleDeployedBridge
+        - event: DepositToken(address,uint256,string,string)
+          handler: handleDepositToken
+        - event: OwnershipTransferred(indexed address,indexed address)
+          handler: handleOwnershipTransferred
+      file: Factory\Factory.wasm
+templates:
+  - kind: ethereum/contract
+    name: Bridge
+    network: avalanche
+    source:
+      abi: Bridge
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      file: templates\Bridge\Bridge.wasm
+      entities:
+        - Bridge
+      abis:
+        - name: Bridge
+          file: Bridge\abis\Bridge.json
+      eventHandlers:
+        - event: CrossRequest(address,uint256,string,string)
+          handler: handleCrossRequest
+        - event: FeePercentageBridgeChanged(uint256,uint256)
+          handler: handleFeePercentageBridgeChanged
+        - event: MinTokenAmountChanged(string,uint256,uint256)
+          handler: handleMinTokenAmountChanged
+        - event: OwnerChanged(address)
+          handler: handleOwnerChanged
+        - event: Paused(address)
+          handler: handlePaused
+        - event: RoleAdminChanged(indexed bytes32,indexed bytes32,indexed bytes32)
+          handler: handleRoleAdminChanged
+        - event: RoleGranted(indexed bytes32,indexed address,indexed address)
+          handler: handleRoleGranted
+        - event: RoleRevoked(indexed bytes32,indexed address,indexed address)
+          handler: handleRoleRevoked
+        - event: TokenChanged(address)
+          handler: handleTokenChanged
+        - event: Unpaused(address)
+          handler: handleUnpaused
