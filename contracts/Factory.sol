@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "./Address.sol";
 import "./Context.sol";
 import "./Ownable.sol";
 import "./IERC20.sol";
@@ -9,9 +8,10 @@ import "./CloneFactory.sol";
 import "./SafeMath.sol";
 import "./IBridge.sol";
 import "./ReentrancyGuard.sol";
+import "@openzeppelin/contracts/utils/Address.sol";
 
 contract Factory is CloneFactory, ReentrancyGuard, Ownable {
-    using Address for address;
+    using Address for address payable;
     using SafeMath for uint256;
 
     event DeployedBridge(
@@ -27,7 +27,7 @@ contract Factory is CloneFactory, ReentrancyGuard, Ownable {
     event DepositToken(address contractBridge, uint256 amount, string toBlockchain, string toAddress);
 
     string private _name = "Bridge Factory V1";
-    address payable public projectWallet = payable(0x5412121507C1aBaEBE39271c34Ea7dD10eba22D8); // GoerBridge Deployer
+    address public constant projectWallet = payable(0x5412121507C1aBaEBE39271c34Ea7dD10eba22D8); // GoerBridge Deployer
     uint256 public deployFee;
     mapping(address => bool) public listBridge;
     mapping(address => mapping (string => bool)) public checkUnique;
@@ -45,7 +45,7 @@ contract Factory is CloneFactory, ReentrancyGuard, Ownable {
         address contractOrigin,
         address token,
         address monitorAccount,
-        string memory projectId,
+        string calldata projectId,
         uint256 feeNative,
         uint256 feePercentBridge
     ) public payable {
@@ -54,7 +54,8 @@ contract Factory is CloneFactory, ReentrancyGuard, Ownable {
             "Contract bridge not found."
         );
         require(msg.value >= deployFee, "Invalid amount");
-        payable(projectWallet).transfer(deployFee);
+        address payable reciever = payable(projectWallet);
+        reciever.sendValue(deployFee);
         address bridgeClone = createClone(contractOrigin);
         IBridge(bridgeClone).setDeployBridge(token, _msgSender(), monitorAccount, feeNative, feePercentBridge);
         checkUnique[contractOrigin][projectId] = true;
