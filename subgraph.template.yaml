@@ -4,11 +4,11 @@ schema:
 dataSources:
   - kind: ethereum
     name: Factory
-    network: {{network}}
+    network: ethereum
     source:
-      address: "{{address}}"
       abi: Factory
-      startBlock: {{startBlock}}
+      address: "0x"
+      startBlock: 962478
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -21,7 +21,7 @@ dataSources:
         - name: Factory
           file: ./abis/Factory.json
       eventHandlers:
-        - event: DeployedBridge(string,address,address,address,address,address,address,address,uint256)
+        - event: DeployedBridge(string,address,address,address,address,address,uint256)
           handler: handleDeployedBridge
         - event: DepositToken(address,uint256,string,string)
           handler: handleDepositToken
@@ -31,7 +31,7 @@ dataSources:
 templates:
   - kind: ethereum/contract
     name: Bridge
-    network: {{network}}
+    network: ethereum
     source:
       abi: Bridge
     mapping:

@@ -4,8 +4,6 @@ GoerBridge uses Solidity smart contracts to enable transfers to and from EVM com
 
 Read more [here]().
 
-A CLI to deploy and interact with these contracts can be found [here](https://github.com/tdkhoa2002/bridge-evm).
-
 ## Requirements
 requires:   `// SPDX-License-Identifier: MIT` and `compiler 0.8.18`.
 
